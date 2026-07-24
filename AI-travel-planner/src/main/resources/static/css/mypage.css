@@ -1,0 +1,269 @@
+/* 마이페이지 레이아웃 */
+.mypage-grid {
+  display: grid;
+  grid-template-columns: 1fr 320px;
+  gap: 20px;
+  align-items: start;
+}
+
+/* 카드 공통 스타일 */
+.mypage-card {
+  background: #ffffff;
+  padding: 24px;
+  border-radius: 14px;
+  border: 1px solid #eceef2;
+  margin-bottom: 20px;
+}
+
+.profile-avatar-container {
+  position: relative;
+  width: 100px;   /* 크기 조정 */
+  height: 100px;
+  margin: 0 auto 20px;
+  border-radius: 50%;
+  overflow: hidden; /* 이미지가 밖으로 나가지 않게 함 */
+  cursor: pointer;  /* 마우스 올렸을 때 손가락 모양 */
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.profile-avatar-container img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: opacity 0.2s ease;
+}
+
+/* 호버 오버레이 스타일 */
+.avatar-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.6); /* 반투명 검은 배경 */
+  color: white;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  opacity: 0; /* 평소에는 안 보임 */
+  transition: opacity 0.2s ease;
+  font-size: 12px;
+}
+
+.camera-icon {
+  font-size: 20px;
+  margin-bottom: 4px;
+}
+
+/* 컨테이너에 호버했을 때 오버레이 표시 */
+.profile-avatar-container:hover .avatar-overlay {
+  opacity: 1;
+}
+
+.profile-avatar-container:hover img {
+  opacity: 0.7; /* 이미지도 살짝 흐리게 */
+}
+
+.profile-avatar img {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.mypage-card label {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 12px;
+  color: #4a4a4a;
+}
+
+.mypage-card input {
+  width: 100%;
+  padding: 10px;
+  margin-top: 4px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+}
+
+/* 계정 통계 */
+.stat-list { list-style: none; }
+.stat-list li {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 0;
+  font-size: 14px;
+}
+
+/* 탈퇴 카드 */
+.danger-card { border-color: #fee2e2; }
+.danger-desc { font-size: 12px; color: #6b6f7a; margin: 10px 0; }
+.danger-btn {
+  width: 100%;
+  padding: 10px;
+  background: #fee2e2;
+  color: #dc2626;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+/* 버튼을 오른쪽으로 정렬하는 컨테이너 */
+.button-group-right {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 20px;
+}
+
+/* 일반 버튼 (정보 저장, 비밀번호 변경) 스타일 */
+.primary-btn {
+  padding: 10px 20px;
+  background: #1b3f9e; /* main.css의 테마 색상과 맞춤 */
+  color: #ffffff;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: background 0.2s;
+}
+
+.primary-btn:hover {
+  background: #163380;
+}
+
+/* 기존 danger-btn(탈퇴 버튼)과 크기를 맞추기 위한 수정 */
+.danger-btn {
+  padding: 10px 20px; /* 기존 코드 유지 또는 수정 */
+  background: #fee2e2;
+  color: #dc2626;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  width: 100%; /* 기존 탈퇴 버튼은 카드 전체 너비 유지 */
+}
+
+/* 저장 성공 메시지 (파란색) */
+.save-msg.success {
+  color: #1b3f9e;
+  font-size: 13px;
+  margin-top: 10px;
+  font-weight: 600;
+}
+
+/* 필수 입력 안내/에러 메시지 (빨간색) */
+.field-msg.error {
+  color: #dc2626;
+  font-size: 12px;
+  margin-top: 5px;
+}
+
+.page-header {
+  position: relative;
+  height: 200px;
+  border-radius: 20px;
+  overflow: hidden;
+  margin-bottom: 28px;
+  background-image: url("images/back.jpg");
+  background-size: cover;
+  background-position: center 65%;
+}
+
+.page-overlay {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 0 40px;
+  background: linear-gradient(90deg, rgba(15, 23, 55, 0.72) 0%, rgba(15, 23, 55, 0.35) 65%, rgba(15, 23, 55, 0.1) 100%);
+}
+
+.page-overlay h1 {
+  color: #ffffff;
+  font-size: 26px;
+  font-weight: 800;
+  margin-bottom: 8px;
+}
+
+.page-overlay p {
+  color: #e4e7f5;
+  font-size: 14px;
+}
+
+.login-required-card {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 70px 30px;
+  text-align: center;
+}
+
+.login-required-icon {
+  margin-bottom: 18px;
+  font-size: 48px;
+}
+
+.login-required-card h2 {
+  margin: 0 0 12px;
+  color: #20263a;
+  font-size: 24px;
+}
+
+.login-required-card p {
+  margin: 0 0 26px;
+  color: #7a8194;
+  line-height: 1.7;
+}
+
+.login-required-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 160px;
+  text-decoration: none;
+}
+
+/* 회원 탈퇴 영역 */
+.delete-account-card{
+    margin-top:20px;
+    padding:20px;
+    border:1px solid #ffd7d7;
+    border-radius:14px;
+    background:#fff7f7;
+}
+
+.delete-account-card h3{
+    color:#d32f2f;
+    margin-bottom:10px;
+    font-size:20px;
+}
+
+.delete-account-card p{
+    color:#666;
+    font-size:14px;
+    line-height:1.5;
+    margin-bottom:15px;
+}
+
+.delete-account-btn{
+    width:100%;
+    height:48px;
+    border:none;
+    border-radius:10px;
+    background:#ef5350;
+    color:white;
+    font-size:15px;
+    font-weight:700;
+    cursor:pointer;
+    transition:.2s;
+}
+
+.delete-account-btn:hover{
+    background:#d32f2f;
+}
+
+.delete-account-btn:active{
+    transform:scale(.98);
+}

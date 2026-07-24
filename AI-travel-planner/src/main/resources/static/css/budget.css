@@ -1,0 +1,442 @@
+.page-header {
+  position: relative;
+  height: 200px;
+  border-radius: 20px;
+  overflow: hidden;
+  margin-bottom: 28px;
+  background-image: url("images/back.jpg");
+  background-size: cover;
+  background-position: center 65%;
+}
+
+.page-overlay {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 0 40px;
+  background: linear-gradient(90deg, rgba(15, 23, 55, 0.72) 0%, rgba(15, 23, 55, 0.35) 65%, rgba(15, 23, 55, 0.1) 100%);
+}
+
+.page-overlay h1 {
+  color: #ffffff;
+  font-size: 26px;
+  font-weight: 800;
+  margin-bottom: 8px;
+}
+
+.page-overlay p {
+  color: #e4e7f5;
+  font-size: 14px;
+}
+
+/* ============================================================
+ * budget.css — 여행 가계부 페이지(budget.html) 전용 스타일
+ * main.css의 색상/카드 톤을 그대로 따릅니다.
+ * ============================================================ */
+
+/* ===== 예산 요약 ===== */
+.budget-target-row {
+  margin-bottom: 16px;
+}
+
+.budget-target-row label {
+  display: block;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #6b6f7a;
+  margin-bottom: 6px;
+}
+
+.budget-target-input-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.budget-target-input-wrapper input {
+  flex: 1;
+  padding: 10px 12px;
+  border: 1px solid #e0e2e8;
+  border-radius: 8px;
+  font-size: 13.5px;
+  background: #f7f8fa;
+  outline: none;
+  font-family: inherit;
+}
+
+.budget-target-input-wrapper input:focus {
+  border-color: #1b3f9e;
+  background: #ffffff;
+}
+
+.budget-target-input-wrapper span {
+  font-size: 13px;
+  color: #6b6f7a;
+}
+
+.mini-btn {
+  flex-shrink: 0;
+  padding: 9px 14px;
+  border: none;
+  border-radius: 8px;
+  background: #1b3f9e;
+  color: #ffffff;
+  font-size: 12.5px;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s ease;
+}
+
+.mini-btn:hover {
+  background: #16337f;
+}
+
+.budget-summary-stats {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 14px;
+}
+
+.summary-stat {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 12px 14px;
+  border-radius: 10px;
+  background: #f7f8fa;
+}
+
+.summary-label {
+  font-size: 12px;
+  color: #9aa0ab;
+}
+
+.summary-value {
+  font-size: 16px;
+  font-weight: 800;
+  color: #1a1a1a;
+}
+
+.summary-value.over-budget {
+  color: #dc2626;
+}
+
+.summary-value.under-budget {
+  color: #1b3f9e;
+}
+
+.budget-progress-track {
+  height: 8px;
+  border-radius: 999px;
+  background: #eceef2;
+  overflow: hidden;
+  margin-bottom: 16px;
+}
+
+.budget-progress-fill {
+  height: 100%;
+  width: 0%;
+  background: #1b3f9e;
+  border-radius: 999px;
+  transition: width 0.25s ease, background 0.25s ease;
+}
+
+.budget-progress-fill.over-budget {
+  background: #dc2626;
+}
+
+.category-summary-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.category-summary-list li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 12.5px;
+  color: #3a3d45;
+  padding-bottom: 8px;
+  border-bottom: 1px dashed #eceef2;
+}
+
+.category-summary-list li:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.category-summary-list .cat-name {
+  font-weight: 600;
+}
+
+.category-summary-list .cat-amount {
+  font-weight: 700;
+  color: #1a1a1a;
+}
+
+.category-empty-msg {
+  font-size: 12.5px;
+  color: #9aa0ab;
+}
+
+/* ===== 카테고리 관리 ===== */
+.category-chip-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.category-chip {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 8px 7px 12px;
+  border-radius: 999px;
+  background: #eef1fb;
+  color: #1b3f9e;
+  font-size: 12.5px;
+  font-weight: 600;
+}
+
+.category-chip-delete {
+  width: 16px;
+  height: 16px;
+  border: none;
+  background: none;
+  color: #7d8bc4;
+  font-size: 11px;
+  line-height: 1;
+  cursor: pointer;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.category-chip-delete:hover {
+  color: #ffffff;
+  background: #dc2626;
+}
+
+.category-add-row {
+  display: flex;
+  gap: 8px;
+}
+
+.category-add-row input {
+  flex: 1;
+  padding: 9px 12px;
+  border: 1px solid #e0e2e8;
+  border-radius: 8px;
+  font-size: 13px;
+  background: #f7f8fa;
+  outline: none;
+  font-family: inherit;
+}
+
+.category-add-row input:focus {
+  border-color: #1b3f9e;
+  background: #ffffff;
+}
+
+/* ===== 지출 추가 폼 ===== */
+.expense-form {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.expense-form input,
+.expense-form select {
+  flex: 1 1 150px;
+  min-width: 120px;
+  padding: 11px 14px;
+  border: 1px solid #e0e2e8;
+  border-radius: 8px;
+  font-size: 13.5px;
+  background: #f7f8fa;
+  outline: none;
+  font-family: inherit;
+}
+
+.expense-form input:focus,
+.expense-form select:focus {
+  border-color: #1b3f9e;
+  background: #ffffff;
+}
+
+.expense-form .primary-btn {
+  padding: 8px 16px;
+  background: #1b3f9e; /* 파란색 배경 */
+  color: #ffffff;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: background 0.2s;
+}
+
+
+/* ===== 지출 목록 ===== */
+.expense-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.expense-list li.expense-item {
+  display: grid;
+  grid-template-columns: 90px 80px 1fr auto auto;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+  color: #3a3d45;
+  padding-bottom: 10px;
+  border-bottom: 1px dashed #eceef2;
+}
+
+.expense-date {
+  color: #9aa0ab;
+  font-size: 12px;
+}
+
+.expense-category-tag {
+  align-self: start;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: #eef1fb;
+  color: #1b3f9e;
+  font-size: 11.5px;
+  font-weight: 700;
+  text-align: center;
+}
+
+.expense-memo {
+  color: #6b6f7a;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.expense-amount {
+  font-weight: 700;
+  color: #1a1a1a;
+  white-space: nowrap;
+}
+
+.expense-delete-btn {
+  width: 20px;
+  height: 20px;
+  border: none;
+  background: none;
+  color: #b0b3bd;
+  font-size: 14px;
+  cursor: pointer;
+  border-radius: 4px;
+}
+
+.expense-delete-btn:hover {
+  color: #dc2626;
+  background: #fdecec;
+}
+
+@media (max-width: 720px) {
+  .expense-list li.expense-item {
+    grid-template-columns: 1fr auto;
+    grid-template-areas:
+      "date delete"
+      "category category"
+      "memo memo"
+      "amount amount";
+    row-gap: 4px;
+  }
+}
+
+/* ===== AI 예산 분석 ===== */
+.ai-analysis-result {
+  font-size: 13.5px;
+  color: #3a3d45;
+  line-height: 1.7;
+}
+
+.ai-analysis-result ul {
+  margin: 8px 0 8px 20px;
+}
+
+.ai-analysis-result li {
+  margin-bottom: 4px;
+}
+
+.ai-analysis-conclusion {
+  margin-top: 10px;
+  padding: 12px 14px;
+  border-radius: 10px;
+  font-weight: 700;
+}
+
+.ai-analysis-conclusion.over-budget {
+  background: #fdecec;
+  color: #dc2626;
+}
+
+.ai-analysis-conclusion.under-budget {
+  background: #eef1fb;
+  color: #1b3f9e;
+}
+
+.ai-analysis-loading {
+  color: #9aa0ab;
+}
+
+/* ===== OCR 영수증 등록 ===== */
+.ocr-desc {
+  font-size: 12.5px;
+  color: #6b6f7a;
+  margin-bottom: 14px;
+}
+
+.ocr-upload-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.ocr-upload-btn {
+  padding: 10px 18px;
+  border-radius: 8px;
+  background: #eef1fb;
+  color: #1b3f9e;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.ocr-upload-btn:hover {
+  background: #e1e6f8;
+}
+
+.ocr-file-name {
+  font-size: 12.5px;
+  color: #6b6f7a;
+}
+
+.ocr-status {
+  font-size: 12.5px;
+  color: #9aa0ab;
+  margin-bottom: 8px;
+  min-height: 16px;
+}
+
+.ocr-confirm-form {
+  padding-top: 8px;
+  border-top: 1px solid #eceef2;
+}

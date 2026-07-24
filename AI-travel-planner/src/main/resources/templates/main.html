@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ko">
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -38,27 +38,48 @@
         <a href="/places" class="nav-item" data-target="places">
           <span class="nav-icon">📍</span> 방문 장소
         </a>
-        <a href="#" class="nav-item" data-target="budget">
+        <a href="/budget" class="nav-item" data-target="budget">
           <span class="nav-icon">💰</span> 여행 가계부
         </a>
-        <a href="#" class="nav-item" data-target="mypage">
+        <a href="/mypage" class="nav-item" data-target="mypage">
           <span class="nav-icon">👤</span> 마이페이지
         </a>
       </nav>
 
-      <button type="button" id="logoutBtn" class="logout-btn">로그아웃</button>
+		<div class="auth-action">
+		
+		  <!-- 비로그인 사용자 -->
+		  <a
+		    th:if="${session.loginUser == null}"
+		    href="/"
+		    class="logout-btn">
+		    로그인
+		  </a>
+		
+		  <!-- 로그인 사용자 -->
+		  <a
+		    th:if="${session.loginUser != null}"
+		    href="/logout"
+		    class="logout-btn">
+		    로그아웃
+		  </a>
+		
+		</div>
     </aside>
-
+<div class="content-area">
     <!-- 메인 콘텐츠 -->
     <main class="main-content">
 
       <!-- 히어로 배너 -->
-      <section class="hero-banner">
-        <div class="hero-overlay">
-          <h1>AI가 만들어주는 맞춤 여행 플래너</h1>
-          <p>여행지, 기간, 예산, 스타일만 입력하면 AI가 딱 맞는 일정을 추천해줘요.</p>
-        </div>
-      </section>
+      <section class="main-page-hero">
+	  <div class="main-page-hero-overlay">
+	    <h1>AI가 만들어주는 맞춤 여행 플래너</h1>
+	    <p>
+	      여행지, 기간, 예산, 스타일만 입력하면
+	      AI가 딱 맞는 일정을 추천해줘요.
+	    </p>
+	  </div>
+	</section>
 
       <!-- 여행 조건 입력 -->
       <section class="search-panel">
@@ -83,7 +104,7 @@
               <option value="단체">단체</option>
             </select>
           </div>
-          <input type="text" id="budget" placeholder="예산 (예: 50만원)">
+          <input type="text" id="budget"  value="100000"  placeholder="예산 (원)">
           <select id="travelStyle">
             <option value="">여행 스타일</option>
             <option value="relax">휴양</option>
@@ -97,12 +118,36 @@
 
       <!-- 일정 / 체크리스트 -->
       <section class="dashboard-grid two-col">
-        <div class="card" id="itineraryCard">
-          <h3>🕒 AI 추천 일정</h3>
-          <p class="placeholder-text">여행 조건을 입력하면 일정이 생성됩니다.</p>
-        </div>
-
-		<div class="card" id="checklistCard">
+		<div class="card" id="itineraryCard">
+		
+		  <!-- 일정 내용만 JS가 교체하는 영역 -->
+		  <div id="itineraryContent">
+		    <h3>🕘 AI 추천 일정</h3>
+		
+		    <p class="placeholder-text">
+		      여행 조건을 입력하면 일정이 생성됩니다.
+		    </p>
+		  </div>
+		
+		  <!-- 이 부분은 JS가 일정 내용을 바꿔도 삭제되지 않음 -->
+		  <div class="trip-save-action">
+		    <button
+		      type="button"
+		      id="saveTripBtn"
+		      class="save-trip-btn"
+		      hidden>
+		      💾 여행 일정 저장
+		    </button>
+		
+		    <p
+		      id="tripSaveMessage"
+		      class="trip-save-message">
+		    </p>
+		  </div>
+		
+		</div>
+		
+		    <div class="card" id="checklistCard">
 		  <h3>✅ 체크리스트</h3>
 		
 		  <ul class="checklist">
@@ -201,13 +246,20 @@
     </main>
   </div>
 
+</div>
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/flatpickr/4.6.13/flatpickr.min.js"></script>
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/flatpickr/4.6.13/l10n/ko.js"></script>
+
+<script src="/js/common.js"></script>
 <script src="/js/main.js"></script>
+
 <script
   src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBJWJ1SPehUNz5zHsDZK5iU3hUNgQOUhQg&callback=initMap"
   async
   defer>
 </script>
+
 </body>
 </html>

@@ -1,210 +1,19 @@
 let map;
 let markers = [];
 
-/* ===== 사이드바 네비게이션 ===== */
-const navItems = document.querySelectorAll(".nav-item:not(.nav-group-toggle)");
 
-navItems.forEach((item) => {
-  item.addEventListener("click", function (e) {
-    const href = this.getAttribute("href");
-
-    if (!href || href === "#") {
-      e.preventDefault();
-      navItems.forEach((el) => el.classList.remove("active"));
-      this.classList.add("active");
-      deactivateAllTrips();
-      console.log("아직 준비되지 않은 메뉴입니다:", this.dataset.target);
-    }
-  });
-});
-
-/* ===== 여행 일정 메뉴 펼침 ===== */
-const scheduleToggle = document.getElementById("scheduleToggle");
-const navGroup = scheduleToggle.closest(".nav-group");
-
-scheduleToggle.addEventListener("click", function () {
-  navGroup.classList.toggle("open");
-});
-
-/* ===== 여행 목록 관리 ===== */
-const tripList = document.getElementById("tripList");
-const tripEmptyMsg = document.getElementById("tripEmptyMsg");
-const tripAddItem = document.getElementById("tripAddItem");
-const homeNavItem = document.querySelector('.nav-item[data-target="home"]');
-
-const TRIPS_STORAGE_KEY = "ai_travel_planner_trips";
-
-let trips = [];
-let tripIdCounter = 0;
-
-function deactivateAllTrips() {
-  tripList.querySelectorAll(".trip-item").forEach((el) => el.classList.remove("active"));
-}
-
-function saveTripsToStorage() {
-  const dataToSave = trips.map(({ id, name, conditions, result }) => ({
-    id,
-    name,
-    conditions,
-    result
-  }));
-
-  localStorage.setItem(TRIPS_STORAGE_KEY, JSON.stringify(dataToSave));
-}
-
-function loadTripsFromStorage() {
-  const saved = JSON.parse(localStorage.getItem(TRIPS_STORAGE_KEY) || "[]");
-
-  saved.forEach((trip) => {
-    trips.push(trip);
-    renderTripItem(trip);
-    if (trip.id > tripIdCounter) tripIdCounter = trip.id;
-  });
-
-  updateTripEmptyState();
-}
-
-tripAddItem.addEventListener("click", function () {
-  navItems.forEach((el) => el.classList.remove("active"));
-  homeNavItem.classList.add("active");
-  deactivateAllTrips();
-
-  document.getElementById("destination").focus();
-  document.querySelector(".search-panel").scrollIntoView({
-    behavior: "smooth",
-    block: "start"
-  });
-});
-
-function renderTripItem(trip) {
-  const li = document.createElement("li");
-  li.className = "trip-item";
-  li.dataset.tripId = trip.id;
-  li.title = trip.name;
-
-  li.innerHTML = `
-    <span class="trip-item-name"></span>
-    <button type="button" class="trip-delete-btn" aria-label="여행 삭제">✕</button>
-  `;
-
-  li.querySelector(".trip-item-name").textContent = trip.name;
-
-  li.addEventListener("click", function () {
-    navItems.forEach((el) => el.classList.remove("active"));
-    deactivateAllTrips();
-    li.classList.add("active");
-    loadTripIntoHome(trip.id);
-  });
-
-  li.querySelector(".trip-delete-btn").addEventListener("click", function (e) {
-    e.stopPropagation();
-    deleteTrip(trip.id, li);
-  });
-
-  tripList.insertBefore(li, tripAddItem);
-  return li;
-}
-
-function addTripToSidebar(conditions, result) {
-  tripIdCounter += 1;
-
-  const tripId = tripIdCounter;
-  const tripName = result.title || `${conditions.destination} ${conditions.period}`;
-
-  const trip = {
-    id: tripId,
-    name: tripName,
-    conditions,
-    result
-  };
-
-  trips.push(trip);
-  const li = renderTripItem(trip);
-
-  navItems.forEach((el) => el.classList.remove("active"));
-  deactivateAllTrips();
-  li.classList.add("active");
-
-  navGroup.classList.add("open");
-  updateTripEmptyState();
-  saveTripsToStorage();
-}
-
-function deleteTrip(tripId, li) {
-  const wasActive = li.classList.contains("active");
-
-  trips = trips.filter((t) => t.id !== tripId);
-  li.remove();
-
-  updateTripEmptyState();
-  saveTripsToStorage();
-
-  if (wasActive) {
-    resetHomeToBlank();
-  }
-}
-
-function resetHomeToBlank() {
-  tripForm.reset();
-
-  if (durationPicker) {
-    durationPicker.clear();
-  }
-
-  itineraryCard.innerHTML = `
-    <h3>🕒 AI 추천 일정</h3>
-    <p class="placeholder-text">
-      여행 조건을 입력하면 일정이 생성됩니다.
-    </p>
-  `;
-
-  navItems.forEach((el) => el.classList.remove("active"));
-  homeNavItem.classList.add("active");
-}
-
-function updateTripEmptyState() {
-  tripEmptyMsg.style.display = trips.length > 0 ? "none" : "block";
-}
-
-function loadTripIntoHome(tripId) {
-  const trip = trips.find((t) => t.id === tripId);
-
-  if (!trip) {
-    return;
-  }
-
-  document.getElementById("destination").value =
-    trip.conditions.destination || "";
-
-  document.getElementById("duration").value =
-    trip.conditions.period || "";
-
-  document.getElementById("companionCount").value =
-    trip.conditions.companionCount || "";
-
-  document.getElementById("companionType").value =
-    trip.conditions.companionType || "";
-
-  document.getElementById("budget").value =
-    trip.conditions.budgetText || "";
-
-  document.getElementById("travelStyle").value =
-    trip.conditions.travelStyleValue || "";
-
-  renderItinerary(trip.result);
-  showPlacesOnMap(trip.result);
-
-  // 방문 장소 페이지에서도 선택한 여행을 사용
-  localStorage.setItem(
-    "latestTrip",
-    JSON.stringify(trip.result)
-  );
-}
 
 /* ===== 여행 조건 입력 폼 ===== */
 const tripForm = document.getElementById("tripForm");
 const itineraryCard = document.getElementById("itineraryCard");
+const itineraryContent = document.getElementById("itineraryContent");
 const generateBtn = document.getElementById("generateBtn");
+
+const saveTripBtn = document.getElementById("saveTripBtn");
+const tripSaveMessage = document.getElementById("tripSaveMessage");
+
+let latestGeneratedTrip = null;
+let latestTripConditions = null;
 
 tripForm.addEventListener("submit", async function (e) {
   e.preventDefault();
@@ -255,9 +64,9 @@ tripForm.addEventListener("submit", async function (e) {
   generateBtn.disabled = true;
   generateBtn.textContent = "생성 중...";
 
-  itineraryCard.innerHTML = `
+  itineraryContent.innerHTML = `
     <h3>🕒 AI 추천 일정</h3>
-    <p class="placeholder-text">AI가 일정을 생성하고 있어요...</p>
+    <p class="placeholder-text">AI가 일정을 생성하고 있어요... 1분정도 소요 됩니다...</p>
   `;
 
   try {
@@ -282,12 +91,26 @@ tripForm.addEventListener("submit", async function (e) {
 	}
 
 	const result = data.result;
+	
+	latestGeneratedTrip = result;
+	latestTripConditions = conditions;
 
 	/* 방문 장소 페이지에 넘길 최신 일정 저장 */
 	localStorage.setItem(
 	  "latestTrip",
 	  JSON.stringify(result)
 	);
+	
+	if (saveTripBtn) {
+	  saveTripBtn.hidden = false;
+	  saveTripBtn.disabled = false;
+	  saveTripBtn.textContent = "💾 여행 일정 저장";
+	}
+
+	if (tripSaveMessage) {
+	  tripSaveMessage.textContent = "";
+	  tripSaveMessage.classList.remove("error");
+	}
 
 	console.log(
 	  "저장된 최신 일정:",
@@ -296,17 +119,23 @@ tripForm.addEventListener("submit", async function (e) {
 
 	renderItinerary(result);
 	showPlacesOnMap(result);
-	addTripToSidebar(conditions, result);
+	await loadSidebarTrips();
 	
 
   } catch (error) {
     console.error(error);
     alert("AI 일정 생성에 실패했습니다. FastAPI 서버와 Spring Boot 서버가 모두 켜져 있는지 확인해주세요.");
 
-    itineraryCard.innerHTML = `
-      <h3>🕒 AI 추천 일정</h3>
-      <p class="placeholder-text">AI 일정 생성에 실패했습니다.</p>
-    `;
+	itineraryContent.innerHTML = `
+	  <h3>🕒 AI 추천 일정</h3>
+	  <p class="placeholder-text">
+	    AI 일정 생성에 실패했습니다.
+	  </p>
+	`;
+
+	if (saveTripBtn) {
+	  saveTripBtn.hidden = true;
+	}
   }
 
   generateBtn.disabled = false;
@@ -314,53 +143,89 @@ tripForm.addEventListener("submit", async function (e) {
 });
 
 function renderItinerary(result) {
-  if (!result || !result.days) {
-    itineraryCard.innerHTML = `
-      <h3>🕒 AI 추천 일정</h3>
-      <p class="placeholder-text">일정 데이터가 없습니다.</p>
-    `;
+  if (
+    !itineraryContent ||
+    !result ||
+    !Array.isArray(result.days)
+  ) {
+    if (itineraryContent) {
+      itineraryContent.innerHTML = `
+        <h3>🕒 AI 추천 일정</h3>
+        <p class="placeholder-text">
+          일정 데이터가 없습니다.
+        </p>
+      `;
+    }
+
     return;
   }
 
-  itineraryCard.innerHTML = `
-    <h3>🕒 ${result.title || "AI 추천 일정"}</h3>
+  const daysHtml = result.days
+    .map((day) => {
+      const places = Array.isArray(day.places)
+        ? day.places
+        : [];
+
+      const placesHtml = places
+        .map((place) => {
+          const estimatedCost = Number(
+            place.estimatedCost || 0
+          ).toLocaleString();
+
+          return `
+            <div class="trip-place-card">
+              <strong>${place.time || ""}</strong>
+              <span>${place.placeName || ""}</span>
+
+              <br>
+
+              <small>${place.category || ""}</small>
+
+              <br>
+
+              <small>${place.address || ""}</small>
+
+              ${
+                place.description
+                  ? `<p>${place.description}</p>`
+                  : ""
+              }
+
+              <p>
+                예상 비용: ${estimatedCost}원
+              </p>
+            </div>
+          `;
+        })
+        .join("");
+
+      return `
+        <div class="day-box">
+          <h4>Day ${day.day || ""}</h4>
+          <p>${day.summary || ""}</p>
+
+          ${placesHtml}
+        </div>
+      `;
+    })
+    .join("");
+
+  itineraryContent.innerHTML = `
+    <h3>
+      🕒 ${result.title || "AI 추천 일정"}
+    </h3>
+
     <p class="placeholder-text">
-      ${result.destination || ""} · ${result.period || ""} · ${result.people || ""}
+      ${result.destination || ""}
+      · ${result.period || ""}
+      · ${result.people || ""}
     </p>
+
+    <div class="itinerary-days">
+      ${daysHtml}
+    </div>
   `;
-
-  result.days.forEach((day) => {
-    itineraryCard.innerHTML += `
-      <div class="day-box">
-        <h4>Day ${day.day}</h4>
-        <p>${day.summary || ""}</p>
-
-        ${
-          day.places
-            ? day.places
-                .map(
-                  (place) => `
-                    <div class="place-item">
-                      <strong>${place.time || ""}</strong>
-                      <span>${place.placeName || ""}</span>
-                      <br>
-                      <small>${place.category || ""}</small>
-                      <br>
-                      <small>${place.address || ""}</small>
-                      <p>${place.description || ""}</p>
-                      <p>예상 비용: ${(place.estimatedCost || 0).toLocaleString()}원</p>
-                    </div>
-                  `
-                )
-                .join("")
-            : ""
-        }
-      </div>
-    `;
-  });
-}
-
-/* ===== 여행 기간 캘린더 ===== */
+}/* ===== 여행 기간 캘린더 ===== */
 /* ===== 여행 기간 캘린더 ===== */
 
 const durationInput = document.getElementById("duration");
@@ -728,21 +593,66 @@ loadChecklist();
 
 
 /* ===== 추천 여행지 클릭 ===== */
-const recommendItems = document.querySelectorAll(".recommend-item");
-const destinationInput = document.getElementById("destination");
+const recommendItems =
+  document.querySelectorAll(".recommend-item");
 
-recommendItems.forEach((item) => {
-  item.addEventListener("click", function () {
-    destinationInput.value = this.dataset.place;
-    destinationInput.focus();
+const destinationInput =
+  document.getElementById("destination");
+
+  const searchPanel =
+    document.querySelector(".search-panel");
+
+  recommendItems.forEach((button) => {
+    button.addEventListener("click", function () {
+      const place = this.dataset.place;
+
+      if (!place || !destinationInput) {
+        return;
+      }
+
+      destinationInput.value = place;
+
+      const currentUrl =
+        new URL(window.location.href);
+
+      if (currentUrl.searchParams.has("tripId")) {
+        currentUrl.searchParams.delete("tripId");
+
+        window.history.replaceState(
+          {},
+          "",
+          currentUrl.pathname
+        );
+      }
+
+      sessionStorage.removeItem(
+        "ai_travel_planner_active_trip"
+      );
+
+      document
+        .querySelectorAll(".trip-item")
+        .forEach((item) => {
+          item.classList.remove("active");
+        });
+
+      searchPanel?.scrollIntoView({
+        behavior: "smooth",
+        block: "center"
+      });
+
+      destinationInput.focus();
+      destinationInput.classList.add(
+        "recommend-selected"
+      );
+
+      setTimeout(() => {
+        destinationInput.classList.remove(
+          "recommend-selected"
+        );
+      }, 1000);
+    });
   });
-});
 
-/* ===== 로그아웃 ===== */
-document.getElementById("logoutBtn").addEventListener("click", function () {
-  sessionStorage.removeItem("accessToken");
-  window.location.href = "/";
-});
 
 /* ===== Google Maps ===== */
 let googleMap;
@@ -767,6 +677,14 @@ window.initMap = function () {
   });
 
   console.log("Google Maps 초기화 성공");
+
+  const savedTrip = JSON.parse(
+    localStorage.getItem("latestTrip") || "null"
+  );
+
+  if (savedTrip && Array.isArray(savedTrip.days)) {
+    showPlacesOnMap(savedTrip);
+  }
 };
 
 function clearMapMarkers() {
@@ -965,3 +883,408 @@ function showPlacesOnMap(result) {
 	    .replace(/"/g, "&quot;")
 	    .replace(/'/g, "&#039;");
 	}
+
+	/* ==================================================
+	   AI 여행 일정 DB 저장
+	================================================== */
+
+	function formatLocalDate(date) {
+	  const year = date.getFullYear();
+
+	  const month = String(
+	    date.getMonth() + 1
+	  ).padStart(2, "0");
+
+	  const day = String(
+	    date.getDate()
+	  ).padStart(2, "0");
+
+	  return `${year}-${month}-${day}`;
+	}
+
+	function parseTripDateRange(value) {
+	  if (!value) {
+	    return null;
+	  }
+
+	  const text = String(value).trim();
+
+	  // 예: 2026-07-29 ~ 2026-07-31
+	  const isoDates = text.match(/\d{4}-\d{2}-\d{2}/g);
+
+	  if (isoDates && isoDates.length >= 2) {
+	    return {
+	      startDate: isoDates[0],
+	      endDate: isoDates[1]
+	    };
+	  }
+
+	  // 예: 7월 29일 ~ 7월 31일
+	  const koreanDates = [
+	    ...text.matchAll(
+	      /(?:(\d{4})년\s*)?(\d{1,2})월\s*(\d{1,2})일/g
+	    )
+	  ];
+
+	  if (koreanDates.length < 2) {
+	    return null;
+	  }
+
+	  const currentYear = new Date().getFullYear();
+
+	  const startYear =
+	    Number(koreanDates[0][1]) || currentYear;
+
+	  const startMonth = Number(koreanDates[0][2]);
+	  const startDay = Number(koreanDates[0][3]);
+
+	  const endYear =
+	    Number(koreanDates[1][1]) || startYear;
+
+	  const endMonth = Number(koreanDates[1][2]);
+	  const endDay = Number(koreanDates[1][3]);
+
+	  const startDate = new Date(
+	    startYear,
+	    startMonth - 1,
+	    startDay
+	  );
+
+	  let endDate = new Date(
+	    endYear,
+	    endMonth - 1,
+	    endDay
+	  );
+
+	  // 12월 30일 ~ 1월 2일과 같이 연도가 넘어가는 경우
+	  if (endDate < startDate) {
+	    endDate = new Date(
+	      startYear + 1,
+	      endMonth - 1,
+	      endDay
+	    );
+	  }
+
+	  return {
+	    startDate: formatLocalDate(startDate),
+	    endDate: formatLocalDate(endDate)
+	  };
+	}
+
+	saveTripBtn?.addEventListener(
+	  "click",
+	  async function () {
+	    if (!latestGeneratedTrip || !latestTripConditions) {
+	      alert("먼저 AI 여행 일정을 생성해주세요.");
+	      return;
+	    }
+
+	    const dateRange = parseTripDateRange(
+	      latestTripConditions.period
+	    );
+
+	    if (!dateRange) {
+	      alert(
+	        "여행 날짜를 읽을 수 없습니다. 날짜를 다시 선택해주세요."
+	      );
+	      return;
+	    }
+
+	    const peopleNumber =
+	      Number(latestTripConditions.companionCount) || 1;
+
+	    const saveData = {
+	      title:
+	        latestGeneratedTrip.title ||
+	        `${latestTripConditions.destination} 여행`,
+
+	      destination:
+	        latestGeneratedTrip.destination ||
+	        latestTripConditions.destination,
+
+	      startDate: dateRange.startDate,
+	      endDate: dateRange.endDate,
+
+	      people: peopleNumber,
+
+	      budget:
+	        Number(latestTripConditions.budget) || 0,
+
+	      style:
+	        latestGeneratedTrip.style ||
+	        latestTripConditions.travelStyleText ||
+	        "",
+
+	      transportType:
+	        latestGeneratedTrip.transportType ||
+	        "대중교통",
+
+	      days: Array.isArray(latestGeneratedTrip.days)
+	        ? latestGeneratedTrip.days
+	        : []
+	    };
+
+	    console.log("DB 저장 요청 데이터:", saveData);
+
+	    saveTripBtn.disabled = true;
+	    saveTripBtn.textContent = "저장 중...";
+
+	    if (tripSaveMessage) {
+	      tripSaveMessage.textContent = "";
+	      tripSaveMessage.classList.remove("error");
+	    }
+
+	    try {
+	      const response = await fetch("/trip/save", {
+	        method: "POST",
+	        headers: {
+	          "Content-Type": "application/json"
+	        },
+	        body: JSON.stringify(saveData)
+	      });
+
+	      let result;
+
+	      try {
+	        result = await response.json();
+	      } catch (jsonError) {
+	        throw new Error(
+	          `서버 응답을 읽을 수 없습니다. 상태 코드: ${response.status}`
+	        );
+	      }
+
+	      if (response.status === 401) {
+	        alert(
+	          result.message ||
+	          "로그인이 필요한 기능입니다."
+	        );
+
+	        window.location.href = "/";
+	        return;
+	      }
+
+	      if (!response.ok || !result.success) {
+	        throw new Error(
+	          result.message ||
+	          "여행 일정 저장에 실패했습니다."
+	        );
+	      }
+
+	      if (tripSaveMessage) {
+	        tripSaveMessage.textContent =
+	          `✅ ${result.message}`;
+
+	        tripSaveMessage.classList.remove("error");
+	      }
+
+	      saveTripBtn.textContent = "✅ 저장 완료";
+	      saveTripBtn.disabled = true;
+
+	      console.log("저장된 여행 ID:", result.tripId);
+
+	    } catch (error) {
+	      console.error("여행 일정 저장 오류:", error);
+
+	      if (tripSaveMessage) {
+	        tripSaveMessage.textContent =
+	          error.message ||
+	          "여행 일정 저장 중 오류가 발생했습니다.";
+
+	        tripSaveMessage.classList.add("error");
+	      }
+
+	      saveTripBtn.disabled = false;
+	      saveTripBtn.textContent = "💾 여행 일정 저장";
+	    }
+	  }
+	);	
+	
+	
+	/* ==================================================
+	   DB에 저장된 여행 상세 불러오기
+	================================================== */
+
+	async function loadSavedTripDetail(tripId) {
+	  console.log("저장된 여행 상세 조회 시작:", tripId);
+
+	  try {
+	    const response = await fetch(`/trip/${tripId}`);
+
+	    let data;
+
+	    try {
+	      data = await response.json();
+	    } catch (jsonError) {
+	      throw new Error(
+	        `서버 응답을 읽을 수 없습니다. (${response.status})`
+	      );
+	    }
+
+	    console.log("저장된 여행 상세 응답:", data);
+
+	    if (response.status === 401) {
+	      alert(
+	        data.message ||
+	        "로그인이 필요한 기능입니다."
+	      );
+
+	      window.location.href = "/";
+	      return;
+	    }
+
+	    if (
+	      !response.ok ||
+	      !data.success ||
+	      !data.trip
+	    ) {
+	      throw new Error(
+	        data.message ||
+	        "저장된 여행 일정을 불러오지 못했습니다."
+	      );
+	    }
+
+	    const trip = data.trip;
+
+	    latestGeneratedTrip = trip;
+
+	    latestTripConditions = {
+	      destination: trip.destination || "",
+	      period:
+	        trip.startDate && trip.endDate
+	          ? `${trip.startDate} ~ ${trip.endDate}`
+	          : "",
+	      companionCount: trip.people || 1,
+	      companionType: "",
+	      peopleText: `${trip.people || 1}명`,
+	      budget: Number(trip.budget || 0),
+	      budgetText: String(trip.budget || ""),
+	      travelStyleValue: trip.style || "",
+	      travelStyleText: trip.style || ""
+	    };
+
+	    localStorage.setItem(
+	      "latestTrip",
+	      JSON.stringify(trip)
+	    );
+
+	    /* 입력창에도 저장된 값 표시 */
+	    const destinationInput =
+	      document.getElementById("destination");
+
+	    const durationInput =
+	      document.getElementById("duration");
+
+	    const companionCountInput =
+	      document.getElementById("companionCount");
+
+	    const budgetInput =
+	      document.getElementById("budget");
+
+	    if (destinationInput) {
+	      destinationInput.value =
+	        trip.destination || "";
+	    }
+
+	    if (durationInput) {
+	      durationInput.value =
+	        trip.startDate && trip.endDate
+	          ? `${trip.startDate} ~ ${trip.endDate}`
+	          : "";
+	    }
+
+	    if (companionCountInput) {
+	      companionCountInput.value =
+	        trip.people || "";
+	    }
+
+	    if (budgetInput) {
+	      budgetInput.value =
+	        trip.budget
+	          ? `${Number(trip.budget).toLocaleString()}원`
+	          : "";
+	    }
+
+	    renderItinerary(trip);
+
+	    /*
+	     * 지도 API가 이미 준비됐으면 바로 표시하고,
+	     * 아직 준비 전이면 initMap()에서 latestTrip을 읽어 표시함
+	     */
+	    if (
+	      typeof google !== "undefined" &&
+	      googleMap
+	    ) {
+	      showPlacesOnMap(trip);
+	    }
+
+	    if (saveTripBtn) {
+	      saveTripBtn.hidden = true;
+	    }
+
+	    if (tripSaveMessage) {
+	      tripSaveMessage.textContent =
+	        "📂 저장된 여행 일정을 불러왔습니다.";
+
+	      tripSaveMessage.classList.remove("error");
+	    }
+
+	  } catch (error) {
+	    console.error(
+	      "저장된 여행 상세 불러오기 오류:",
+	      error
+	    );
+
+	    if (itineraryContent) {
+	      itineraryContent.innerHTML = `
+	        <h3>🕒 AI 추천 일정</h3>
+	        <p class="placeholder-text">
+	          ${error.message}
+	        </p>
+	      `;
+	    }
+
+	    alert(error.message);
+	  }
+	}
+
+	/* common.js가 메인 화면에서 호출할 수 있게 등록 */
+	window.loadSavedTripDetail =
+	  loadSavedTripDetail;
+
+
+	  /* ==================================================
+	     URL의 tripId로 저장된 여행 불러오기
+	  ================================================== */
+
+	  document.addEventListener(
+	    "DOMContentLoaded",
+	    async function () {
+	      const params =
+	        new URLSearchParams(
+	          window.location.search
+	        );
+
+	      const tripId =
+	        params.get("tripId");
+
+	      if (!tripId) {
+	        return;
+	      }
+
+	      console.log(
+	        "URL에서 받은 여행 ID:",
+	        tripId
+	      );
+
+	      if (
+	        typeof setActiveTripId === "function"
+	      ) {
+	        setActiveTripId(tripId);
+	      }
+
+	      await loadSavedTripDetail(tripId);
+	    }
+	  );
+	  
+
+	    

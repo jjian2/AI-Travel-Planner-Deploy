@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI 여행 플래너 - 여행 가계부</title>
+<link rel="stylesheet" href="css/main.css">
+<link rel="stylesheet" href="css/budget.css">
+</head>
+<body>
+
+  <div class="app-layout">
+
+    <!-- 왼쪽 사이드바 (다른 페이지와 동일 구조) -->
+    <aside class="sidebar">
+      <div class="sidebar-logo">
+        <img src="images/tiger.png" alt="AI 여행 플래너" class="sidebar-logo-img">
+        <span>AI 여행 플래너</span>
+      </div>
+
+      <nav class="sidebar-nav">
+        <a href="/main" class="nav-item" data-target="home">
+          <span class="nav-icon">🏠</span> Home
+        </a>
+
+        <div class="nav-group">
+          <button type="button" class="nav-item nav-group-toggle" id="scheduleToggle">
+            <span class="nav-icon">🗓️</span> 여행 일정
+            <span class="nav-caret">▾</span>
+          </button>
+
+          <ul class="trip-sublist" id="tripList">
+            <li class="trip-empty" id="tripEmptyMsg">아직 생성된 여행이 없어요.</li>
+            <li class="trip-add" id="tripAddItem">+ 새 여행 만들기</li>
+          </ul>
+        </div>
+
+        <a href="/places" class="nav-item" data-target="places">
+          <span class="nav-icon">📍</span> 방문 장소
+        </a>
+        <a href="/budget" class="nav-item" data-target="budget">
+          <span class="nav-icon">💰</span> 여행 가계부
+        </a>
+        <a href="/mypage" class="nav-item" data-target="mypage">
+          <span class="nav-icon">👤</span> 마이페이지
+        </a>
+      </nav>
+
+		<div class="auth-action">
+		
+		  <!-- 비로그인 사용자 -->
+		  <a
+		    th:if="${session.loginUser == null}"
+		    href="/"
+		    class="logout-btn">
+		    로그인
+		  </a>
+		
+		  <!-- 로그인 사용자 -->
+		  <a
+		    th:if="${session.loginUser != null}"
+		    href="/logout"
+		    class="logout-btn">
+		    로그아웃
+		  </a>
+		
+		</div>
+    </aside>
+
+    <!-- 메인 콘텐츠 -->
+    <main class="main-content">
+
+      <section class="page-header">
+        <div class="page-overlay">
+          <h1>💰 여행 가계부</h1>
+          <p>지출을 기록하고, AI 예산 분석과 영수증 OCR로 더 쉽게 관리해보세요.</p>
+        </div>
+      </section>
+
+      <!-- 예산 요약 + 카테고리 관리 -->
+      <section class="dashboard-grid two-col">
+
+        <div class="card" id="budgetSummaryCard">
+          <h3>📊 예산 요약</h3>
+
+          <div class="budget-target-row">
+            <label for="budgetTargetInput">총 예산</label>
+            <div class="budget-target-input-wrapper">
+              <input type="text" id="budgetTargetInput" placeholder="예: 500000">
+              <span>원</span>
+              <button type="button" id="budgetTargetSaveBtn" class="mini-btn">저장</button>
+              <button type="button" id="resetBudgetBtn" class="mini-btn" style="background:#eef1fb; color:#1b3f9e;">초기화</button>
+            </div>
+          </div>
+
+          <div class="budget-summary-stats">
+            <div class="summary-stat">
+              <span class="summary-label">총 지출</span>
+              <span class="summary-value" id="totalSpentValue">0원</span>
+            </div>
+            <div class="summary-stat">
+              <span class="summary-label" id="remainingLabel">남은 예산</span>
+              <span class="summary-value" id="remainingValue">-</span>
+            </div>
+          </div>
+
+          <div class="budget-progress-track">
+            <div class="budget-progress-fill" id="budgetProgressFill"></div>
+          </div>
+
+          <ul class="category-summary-list" id="categorySummaryList">
+            <!-- JS가 카테고리별 소계를 렌더링 -->
+          </ul>
+        </div>
+
+        <div class="card" id="categoryManageCard">
+          <div class="card-header">
+            <h3>🏷️ 카테고리 관리</h3>
+          </div>
+
+          <div class="category-chip-list" id="categoryChipList">
+            <!-- JS가 카테고리 칩을 렌더링 -->
+          </div>
+
+          <div class="category-add-row">
+            <input type="text" id="newCategoryInput" placeholder="새 카테고리 이름 (예: 기념품)">
+            <button type="button" id="addCategoryBtn" class="mini-btn">+ 추가</button>
+          </div>
+        </div>
+
+      </section>
+
+      <!-- 지출 추가 -->
+      <section class="card" id="expenseFormCard">
+        <h3>➕ 지출 추가</h3>
+
+        <form id="expenseForm" class="expense-form">
+          <input type="date" id="expenseDate" required>
+
+          <select id="expenseCategory" required>
+            <!-- JS가 카테고리 옵션을 렌더링 -->
+          </select>
+
+          <input type="text" id="expenseAmount" placeholder="금액 (예: 30000)" inputmode="numeric" required>
+          <input type="text" id="expenseMemo" placeholder="메모 (예: 저녁 식사)">
+
+          <button type="submit" class="primary-btn">
+          	+ 추가
+          </button>
+        </form>
+      </section>
+
+      <!-- 지출 목록 -->
+      <section class="card" id="expenseListCard">
+        <h3>🧾 지출 목록</h3>
+
+        <ul class="expense-list" id="expenseList">
+          <li class="budget-empty" id="expenseEmptyMsg">아직 등록된 지출이 없어요.</li>
+        </ul>
+      </section>
+
+      <!-- AI 예산 분석 -->
+      <section class="card" id="aiAnalysisCard">
+        <div class="card-header">
+          <h3>💡 AI 예산 분석</h3>
+          <button type="button" id="runAiAnalysisBtn" class="mini-btn">분석하기</button>
+        </div>
+
+        <div id="aiAnalysisResult" class="ai-analysis-result">
+          <p class="placeholder-text">지출을 등록한 뒤 "분석하기"를 눌러보세요. AI가 카테고리별 지출을 분석하고 예산 초과 여부를 알려드려요.</p>
+        </div>
+      </section>
+
+      <!-- OCR 영수증 등록 -->
+      <section class="card" id="ocrCard">
+        <h3>📄 OCR 영수증 등록</h3>
+        <p class="ocr-desc">영수증 사진을 올리면 금액을 자동으로 인식해서 가계부에 바로 등록할 수 있어요.</p>
+
+        <div class="ocr-upload-row">
+          <label for="ocrFileInput" class="ocr-upload-btn">📷 영수증 업로드</label>
+          <input type="file" id="ocrFileInput" accept="image/*" style="display:none;">
+          <span id="ocrFileName" class="ocr-file-name"></span>
+        </div>
+
+        <div id="ocrStatus" class="ocr-status"></div>
+
+        <form id="ocrConfirmForm" class="expense-form ocr-confirm-form" style="display:none;">
+          <input type="date" id="ocrDate">
+          <select id="ocrCategory"></select>
+          <input type="text" id="ocrAmount" placeholder="인식된 금액" inputmode="numeric">
+          <input type="text" id="ocrMemo" placeholder="메모 (예: 상호명)">
+          <button type="submit" class="primary-btn">가계부에 추가</button>
+        </form>
+      </section>
+
+    </main>
+  </div>
+
+<script src="/js/common.js"></script>
+<script src="/js/budget.js"></script>
+</body>
+</html>
